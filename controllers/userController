@@ -1,0 +1,25 @@
+const User = require('../models/user');
+
+exports.createUser = async (req, res) => {
+    try {
+        const { username, emailID, password } = req.body;
+
+        const exitingUser = await User.findOne({where: {emailID}})
+        if(exitingUser){
+            return res.status(403).send('Request failed with status code 403');
+            //return("Error: Request failed with status code 403",error);
+            //return res.status(404).send('Email already exists. ');
+        }
+        const newUser = await User.create({ username, emailID, password });
+
+        console.log('User created:', newUser);
+        res.status(201).send('User registered successfully');
+    } catch (error) {
+        console.error('Error saving user:', error);
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            res.status(400).send('Email already exists.');
+        } else {
+            res.status(500).send('Internal Server Error');
+        }
+    }
+};
